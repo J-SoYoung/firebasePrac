@@ -1,8 +1,6 @@
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { signInWithGoogle, signOutFromGoogle } from "./api/auth";
 import "./App.css";
-import { readUserData, writeUserData } from "./api/apis";
-import { useEffect, useState } from "react";
+import { useAuth } from "./hooks/useAuth";
 
 export interface UserType {
   userId: string;
@@ -11,47 +9,38 @@ export interface UserType {
 }
 
 function App() {
-  const [user, setUser] = useState<UserType>();
+  const { user, loading } = useAuth();
 
-  const onClickTestButtons = async () => {
-    const userId = "user_01";
+  const onClickLogin = async () => {
     try {
-      const userData = await readUserData(userId);
-      setUser(userData)
-      console.log(userData)
+      await signInWithGoogle();
     } catch (error) {
-      console.error(error);
+      console.error("Logout failed:", error);
     }
   };
 
-  // const onClickTestButtons = () => {
-  //   try {
-  //     const userId = "user_01";
-  //     const name = "thdud";
-  //     const email = "thdud@aaa.aaa";
-  //     writeUserData(userId, name, email);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
+  const onClickLogout = async () => {
+    try {
+      await signOutFromGoogle();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {user ? (
+          <div>
+            <h1>Welcome</h1>
+            <button onClick={onClickLogout}>LogOut</button>
+          </div>
+        ) : (
+          <button onClick={onClickLogin}>Login</button>
+        )}
       </div>
-      <h1>{user?.username}</h1>
-      <button
-        className="text-3xl font-bold p-2 border"
-        onClick={onClickTestButtons}
-      >
-        TEST 클릭
-      </button>
     </>
   );
 }
